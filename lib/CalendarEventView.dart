@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:hello_world/AddAppointment.dart';
 import 'package:hello_world/constants.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
+import 'package:intl/intl.dart';
+
 
 class CalendarEventView extends StatefulWidget {
   static const routeName = calendarViewRoute;
-  CalendarEventView({Key key}) : super(key: key);
+  //CalendarEventView({Key key}) : super(key: key);
 
   @override
   _CalendarEventViewState createState() => _CalendarEventViewState();
@@ -16,6 +18,14 @@ class _CalendarEventViewState extends State<CalendarEventView> {
   List<Appointment> appointments = <Appointment>[];
   SfCalendar calendar;
   CalendarView calendarView;
+  String _text, _titleText;
+ 
+@override
+void initState() {
+  _text='';
+  _titleText='';
+  super.initState();
+}
 
   _CalendarEventViewState() {
     calendarView = CalendarView.month;
@@ -29,7 +39,8 @@ class _CalendarEventViewState extends State<CalendarEventView> {
         length: 3,
         child: Scaffold(
           appBar: AppBar(
-            title: Text("Calendar", style: TextStyle(color: Colors.white)),
+            //backgroundColor: Colors.blue,
+            title: Text('Classes', style: TextStyle(color: Colors.white)),
             bottom: TabBar(
               tabs: <Widget>[
                 Tab(text: 'Day',),
@@ -54,7 +65,8 @@ class _CalendarEventViewState extends State<CalendarEventView> {
               createCalendar(CalendarView.day),
               createCalendar(CalendarView.week),
               createCalendar(CalendarView.month),
-            ],)
+            ],
+          )
         )
       )
     );
@@ -62,14 +74,11 @@ class _CalendarEventViewState extends State<CalendarEventView> {
 
   SfCalendar createCalendar(CalendarView calendarView) {
     return SfCalendar(
+      
+      //todayHighlightColor: Colors.blue,
       view: calendarView,
       dataSource: _getCalendarDataSource(),
-      /*onTap: (calendarTapDetails) {
-        if (calendarTapDetails != null) {
-          print('$calendarTapDetails.appointments');
-          calendarTapped(calendarTapDetails);
-        }
-      },*/
+      onTap: (eventDetails) => calendarTapped(eventDetails),
       monthViewSettings: MonthViewSettings(
         appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
         showAgenda: true
@@ -77,14 +86,39 @@ class _CalendarEventViewState extends State<CalendarEventView> {
     );
   }
 
-  void calendarTapped(CalendarTapDetails details) {
-    if (details == null) {
-      print('nul');
-    } else {
-      String subject = details.appointments[0].subject;
-      print(subject);
+void calendarTapped(CalendarTapDetails details) {
+    if (details.targetElement == CalendarElement.header) {
+      _text = DateFormat('MMMM yyyy')
+          .format(details.date)
+          .toString();
+      _titleText='Header';
     }
-  }
+    else if (details.targetElement == CalendarElement.viewHeader) {
+      _text = DateFormat('EEEE dd, MMMM yyyy')
+          .format(details.date)
+          .toString();
+      _titleText='View Header';
+    }
+    else if (details.targetElement == CalendarElement.calendarCell) {
+      _text = DateFormat('EEEE dd, MMMM yyyy')
+          .format(details.date)
+          .toString();
+      _titleText='Time slots';
+    }
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title:Container(child: new Text(" $_titleText")),
+              content:Container(child: new Text(" $_text")),
+              actions: <Widget>[
+                new FlatButton(onPressed: (){
+                  Navigator.of(context).pop();
+                }, child: new Text('close'))
+              ],
+            );
+          });
+    }
 
 
   void addAppointment(String subj, DateTime start, DateTime end, String recur) {
