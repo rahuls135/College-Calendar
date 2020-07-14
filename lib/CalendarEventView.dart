@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hello_world/AddAppointment.dart';
+import 'package:hello_world/AddSemester.dart';
 import 'package:hello_world/constants.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:intl/intl.dart';
@@ -16,6 +17,7 @@ class CalendarEventView extends StatefulWidget {
 
 class _CalendarEventViewState extends State<CalendarEventView> {
   List<Appointment> appointments = <Appointment>[];
+  List<DateTime> semesters = <DateTime>[];
   SfCalendar calendar;
   CalendarView calendarView;
   String _text, _titleText;
@@ -40,7 +42,7 @@ void initState() {
         child: Scaffold(
           appBar: AppBar(
             //backgroundColor: Colors.blue,
-            title: Text('Classes', style: TextStyle(color: Colors.white)),
+            title: Text('Classes', style: TextStyle(fontWeight: FontWeight.w400, color: Colors.white)),
             bottom: TabBar(
               tabs: <Widget>[
                 Tab(text: 'Day',),
@@ -49,9 +51,17 @@ void initState() {
               ],
             ),
             actions: <Widget>[
+              FlatButton (
+                textColor: Colors.white,
+                child: Icon(CupertinoIcons.add_circled),
+                onPressed: () => Navigator.pushNamed(
+                  context,
+                  AddSemster.routeName,
+                  arguments: addSemester),
+              ),
               FlatButton(
                 textColor: Colors.white,
-                child: Icon(Icons.event),
+                child: Icon(CupertinoIcons.create_solid),
                 onPressed: () => Navigator.pushNamed(
                   context,
                   AddAppointment.routeName,
@@ -74,11 +84,10 @@ void initState() {
 
   SfCalendar createCalendar(CalendarView calendarView) {
     return SfCalendar(
-      
       //todayHighlightColor: Colors.blue,
+      //onTap: (eventDetails) => calendarTapped(eventDetails),
       view: calendarView,
       dataSource: _getCalendarDataSource(),
-      onTap: (eventDetails) => calendarTapped(eventDetails),
       monthViewSettings: MonthViewSettings(
         appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
         showAgenda: true
@@ -124,17 +133,22 @@ void calendarTapped(CalendarTapDetails details) {
   void addAppointment(String subj, DateTime start, DateTime end, String recur) {
     DateTime startDate = DateTime(start.year, start.month, start.day);
     DateTime endDate = DateTime(end.year, end.month, end.day);
-    appointments.add(createAppointment(startDate, endDate, subj, start, end, recur));
-    setState(() {});
+    setState(() =>
+      appointments.add(
+        Appointment(
+          startTime: startDate.add(Duration(hours: start.hour, minutes: start.minute)),
+          endTime: endDate.add(Duration(hours: end.hour, minutes: end.minute)),
+          subject: subj,
+          recurrenceRule: recur
+        )
+      )
+    );
   }
 
-  Appointment createAppointment(DateTime startDate, DateTime endDate, String subj, DateTime start, DateTime end, String recur) {
-    return Appointment(
-      startTime: startDate.add(Duration(hours: start.hour, minutes: start.minute)),
-      endTime: endDate.add(Duration(hours: end.hour, minutes: end.minute)),
-      subject: subj,
-      recurrenceRule: recur
-    );
+
+  void addSemester(String name, DateTime start, DateTime end) {
+    DateTime startDate = DateTime(start.year, start.month, start.day);
+    DateTime endDate = DateTime(end.year, end.month, end.day);
   }
 
   _AppointmentDataSource _getCalendarDataSource() {

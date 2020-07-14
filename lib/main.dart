@@ -8,7 +8,6 @@ void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   static const routeName = homeRoute;
-  // This widget is the root of your application.   
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
