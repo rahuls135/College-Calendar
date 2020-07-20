@@ -1,9 +1,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/rendering.dart';
 import 'package:hello_world/constants.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:intl/intl.dart';
+import 'package:maps_launcher/maps_launcher.dart';
+
 
 class AddAppointment extends StatefulWidget {
   static const routeName = addAppointmentRoute;
@@ -14,6 +17,7 @@ class AddAppointment extends StatefulWidget {
 
 class _AddAppointmentState extends State<AddAppointment> {
   final subjectController = TextEditingController();
+  final locationController = TextEditingController();
 
   List<String> _recurFreq = ['None', 'Daily', 'Weekly', 'Monthly'];
   String _recurFreqStr;
@@ -24,6 +28,10 @@ class _AddAppointmentState extends State<AddAppointment> {
   DateTime _endTime;
   List<Text> allDays = <Text>[];
   bool _canSubmit = false;
+  bool _changeStartTime = false;
+  String _currentColorText;
+  Color _currentColorColor;
+  Map<String, Color> _eventColors = new Map();
   
 
   _AddAppointmentState() {
@@ -38,6 +46,14 @@ class _AddAppointmentState extends State<AddAppointment> {
     _recurByDay['TH'] = false;
     _recurByDay['FR'] = false;
     _recurByDay['SA'] = false;
+    _eventColors['Blue'] = Colors.blue;
+    _eventColors['Red'] = Colors.red;
+    _eventColors['Pink'] = Colors.pink[200];
+    _eventColors['Green'] = Colors.green;
+    _eventColors['Yellow'] = Colors.amber;
+    _eventColors['Purple'] = Colors.purple;
+    _currentColorText = 'Blue';
+    _currentColorColor = _eventColors[_currentColorText];
   }
 
   
@@ -59,8 +75,9 @@ class _AddAppointmentState extends State<AddAppointment> {
         onHorizontalDragEnd: (_) => Navigator.pop(context),
         child: Scaffold(
           body: ListView(
-            padding: EdgeInsets.all(20),
-            children: getWidgets(addAppointment),),
+            padding: EdgeInsets.all(15),
+            children: getWidgets(addAppointment),
+          ),
         )
       ),
     );
@@ -88,13 +105,14 @@ class _AddAppointmentState extends State<AddAppointment> {
 
   List<Widget> getWidgets(Function addAppointment) {
     List<Widget> allWidgets = <Widget>[];
-    allWidgets.add(buildSubjectTile(subjectController, TextInputType.text, 'Event name'));
+    allWidgets.add(buildInputTile(subjectController, 'Event name', CupertinoIcons.pen));
+    allWidgets.add(buildInputTile(locationController, 'Event location', CupertinoIcons.location_solid));
     if (subjectController.text != '') {
       _canSubmit = true;
     }
     allWidgets.add(buildWidgetPadding());
-    allWidgets.add(buildStartTime());
-    allWidgets.add(buildEndTime());
+    allWidgets.add(buildTime(_startTime, 'Start', true));
+    allWidgets.add(buildTime(_endTime, 'End', false));
     allWidgets.add(buildWidgetPadding(padding: 5));
     allWidgets.add(buildDropDownTile());
     if (_recurFreqStr != 'None')  {
@@ -113,6 +131,7 @@ class _AddAppointmentState extends State<AddAppointment> {
         }
       }
     }
+    allWidgets.add(buildColorChooser());
     allWidgets.add(buildWidgetPadding());
     allWidgets.add(buildCallBackSubmit(addAppointment));
     return allWidgets;
@@ -120,74 +139,61 @@ class _AddAppointmentState extends State<AddAppointment> {
 
   
   // Widget to build the subject
-  ListTile buildSubjectTile(controller, keyType, label) {
+  ListTile buildInputTile(controller, hint, icon) {
     return ListTile(
-      title: buildSubject(controller, keyType, label),);
-  }
-  TextField buildSubject(controller, keyType, label) {
-    return TextField(
+      title: TextField(
       controller: controller,
-      keyboardType: keyType,
+      keyboardType: TextInputType.text,
       onChanged: (String value) => setState(() {
         if (value == '') {
           _canSubmit = false;
         }
       }),
       decoration: InputDecoration(
-        alignLabelWithHint: true,
-        icon: Icon(CupertinoIcons.pen),
-        labelText: label,
+        icon: Icon(icon),
+        hintText: hint
       ),
-    );
-  }
-
-  // Widget to build the Start time
-  ListTile buildStartTime() {
-    return ListTile(
-      leading: buildText('Start'),
-      trailing: getChosenTime(_startTime),
-      onTap: () => showCupertinoModalPopup(
-          context: context,
-          builder: (context) => startDatePicker()
-      ),
-    );
-  }
-  Container startDatePicker() {
-    return Container(
-      height: 300,
-      color: Colors.white,
-      child: CupertinoDatePicker(
-      initialDateTime: _startTime,
-      //maximumDate: _endTime,
-      onDateTimeChanged: (startTime) => 
-        setState(() => _startTime = startTime)
-      ),
-    );
-  }
-
-  ListTile buildEndTime() {
-    return ListTile(
-      leading: buildText('End'),
-      trailing: getChosenTime(_endTime),
-      onTap: () => showCupertinoModalPopup(
-          context: context,
-          builder: (context) => endDatePicker()
       )
     );
   }
-  Container endDatePicker() {
+
+  // Widget to build the Start and End time
+  ListTile buildTime(DateTime time, String title, bool change) {
+    checkTime();
+    return ListTile(
+      leading: buildText(title),
+      trailing: getChosenTime(time),
+      onTap: () {
+        _changeStartTime = change;
+        showCupertinoModalPopup(
+          context: context,
+          builder: (context) => buildDatePicker(time));
+      }
+    );
+  }
+  Container buildDatePicker(DateTime initTime) {
     return Container(
       height: 300,
       color: Colors.white,
       child: CupertinoDatePicker(
-      initialDateTime: _endTime,
-      //maximumDate: _startTime,
-      onDateTimeChanged: (endTime) => 
-        setState(() => _endTime = endTime)
+      initialDateTime: initTime,
+      onDateTimeChanged: (newTime) => 
+        setState(() => setTime(newTime))
       ),
     );
   }
-
+  void setTime(DateTime newTime) {
+    if (_changeStartTime) {
+      _startTime = newTime;
+    } else {
+      _endTime = newTime;
+    }
+  }
+  void checkTime() {
+    if (_startTime.isAfter(_endTime)) {
+      setState(() => _canSubmit = false);
+    }
+  }
   Text getChosenTime(DateTime time) {
     // if hour midnight or noon, hardcode 12 in
     // will show 0 instead of 12 otherwise
@@ -197,24 +203,22 @@ class _AddAppointmentState extends State<AddAppointment> {
     return buildText(DateFormat('E MMM d, y   K:mm a').format(time), color: Colors.blue);
   }
 
+  // Widget to build event frequency widget
   ListTile buildDropDownTile() {
     return ListTile(
       leading: buildText('Frequency'),
-      //trailing: recurDropDown(_recurFreq),
-      //trailing: recurButton(),
       trailing: buildText(_recurFreqStr, color: Colors.blue),
       onTap: () => showCupertinoModalPopup(
           context: context,
-          builder: (context) => dropDownActionSheet()
+          builder: (context) => dropDownActionSheetFreqPicker()
       ),
     );
   }
-  CupertinoActionSheet dropDownActionSheet() {
+  CupertinoActionSheet dropDownActionSheetFreqPicker() {
     return CupertinoActionSheet(
       actions: dropDownFreqList(),
       cancelButton: CupertinoActionSheetAction(
         isDestructiveAction: true,
-        isDefaultAction: true,
         child: Text('Cancel'),
         onPressed: () => Navigator.pop(context),
       ),
@@ -236,6 +240,7 @@ class _AddAppointmentState extends State<AddAppointment> {
     return freqList;
   }
 
+  // Widget to build event interval widget
   ListTile buildIntervalTile() {
     return ListTile(
       contentPadding: EdgeInsets.fromLTRB(16.0, 0.0, 50.0, 0.0),
@@ -255,26 +260,28 @@ class _AddAppointmentState extends State<AddAppointment> {
     );
   }
 
+  // Widget to build recurring days
   ListTile buildDaysTile() {
     return ListTile(
       title: buildText('Repeats'),
-      subtitle: buildDaysWeek(),
+      subtitle: buildDaysWeek()
     );
   }
-  Center buildDaysWeek() {
-    //List<bool> list = _recurByDay.values;
-    return Center(
+  Container buildDaysWeek() {
+    //List<bool>list = _recurByDay.values;
+    return Container(
+      padding: EdgeInsets.only(left: MediaQuery.of(context).size.width / 75),
       child: ToggleButtons(
+        constraints: BoxConstraints.expand(
+          width: MediaQuery.of(context).size.width / 9,
+          height: 50
+        ),
         borderRadius: BorderRadius.all(Radius.elliptical(20,15)),
         selectedBorderColor: Colors.blueAccent,
         isSelected: _recurByDay.values.toList(),
         children: buildDay(),
-        onPressed: (val) {
-          setState(() {
-            print(allDays[val].data);
-            _recurByDay[allDays[val].data] = !_recurByDay[allDays[val].data];
-          });
-        },
+        onPressed: (val) =>
+          setState(() => _recurByDay[allDays[val].data] = !_recurByDay[allDays[val].data])
       ),
     );
   }
@@ -286,24 +293,55 @@ class _AddAppointmentState extends State<AddAppointment> {
     return allDays;
   }
 
-  CupertinoButton buildCallBackSubmit(Function addAppointment) {
-    if (_canSubmit) {
-      return CupertinoButton.filled(
-        child: Text('Add'),
-        onPressed: () => createRecurAndSubmit(addAppointment),
+  // Widget to build event color picker
+  ListTile buildColorChooser() {
+    return ListTile(
+      leading: buildText('Color'),
+      trailing: buildText(_currentColorText, color: _currentColorColor),
+      onTap: () => showCupertinoModalPopup(
+        context: context,
+        builder: (context) => dropDownActionSheetColorChooser())
+    );
+  }
+  CupertinoActionSheet dropDownActionSheetColorChooser() {
+    return CupertinoActionSheet(
+      actions: dropDownColors(),
+    );
+  }
+  List<CupertinoActionSheetAction> dropDownColors() {
+    List<CupertinoActionSheetAction> colorsList = <CupertinoActionSheetAction>[];
+    for (String colorText in _eventColors.keys) {
+      colorsList.add(
+        CupertinoActionSheetAction(
+          child: Text(colorText, style: TextStyle(color: _eventColors[colorText]),),
+          onPressed: () {
+            setState(() {
+              _currentColorText = colorText;
+              _currentColorColor = _eventColors[colorText];
+            });
+            Navigator.pop(context);
+          },)
       );
+    }
+    return colorsList;
+  }
+
+  // Widget to build submit/add button
+  CupertinoButton buildCallBackSubmit(Function addAppointment) {
+    Function submitFunc;
+    if (_canSubmit) {
+      submitFunc = () => createRecurAndSubmit(addAppointment);
     }
     return CupertinoButton.filled(
       child: Text('Add'),
       disabledColor: Colors.grey,
-      onPressed: null
+      onPressed: submitFunc
     );
   }
   void createRecurAndSubmit(Function addAppointment) {
     _recurFreqStr = _recurFreqStr.toUpperCase();
     //String recur = 'FREQ=WEEKLY;INTERVAL=1;BYDAY=FR,;COUNT=10';
-    String recurStr =
-        'FREQ=$_recurFreqStr;INTERVAL=$_recurInterval;COUNT=15;';
+    String recurStr = 'FREQ=$_recurFreqStr;INTERVAL=$_recurInterval;COUNT=15;';
     if (_recurFreqStr == 'NONE') {
       recurStr = null;
     } else {
@@ -314,13 +352,12 @@ class _AddAppointmentState extends State<AddAppointment> {
               _recurByDayStr += '' + entry.key;
             }
           }
-          // user didn't click any days to repeat event on
-            recurStr += _recurByDayStr;
+          recurStr += _recurByDayStr;
         } else if (_recurFreqStr == 'MONTHLY') {
           recurStr += 'BYMONTHDAY=' + _startTime.day.toString();
         }
     }
-    addAppointment(subjectController.text, _startTime, _endTime, recurStr);
+    addAppointment(subjectController.text, locationController.text, _startTime, _endTime, recurStr, _currentColorColor);
     clearTextFields();
     Navigator.pop(context);
   }
