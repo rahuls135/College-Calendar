@@ -1,6 +1,6 @@
 # hello_world
 
-A new Flutter project.
+Simple College Calendar schedule app.
 
 ## Getting Started
 
