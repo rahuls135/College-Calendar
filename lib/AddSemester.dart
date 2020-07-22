@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'constants.dart';
 import 'package:intl/intl.dart';
 
-class AddSemster extends StatefulWidget {
+class AddSemester extends StatefulWidget {
   static const routeName = addSemesterRoute;
 
   @override
@@ -13,7 +13,7 @@ class AddSemster extends StatefulWidget {
 }
 
 
-class _AddSemesterState extends State<AddSemster> {
+class _AddSemesterState extends State<AddSemester> {
   final semesterController = TextEditingController();
   DateTime _startTime;
   DateTime _endTime;

@@ -10,6 +10,7 @@ import 'package:maps_launcher/maps_launcher.dart';
 
 class AddAppointment extends StatefulWidget {
   static const routeName = addAppointmentRoute;
+  
 
   @override
   _AddAppointmentState createState() => _AddAppointmentState();
@@ -35,10 +36,19 @@ class _AddAppointmentState extends State<AddAppointment> {
   
 
   _AddAppointmentState() {
-    _recurFreqStr = _recurFreq[0];
-    _recurInterval = 1;
     _startTime = DateTime.now();
     _endTime = DateTime.now().add(Duration(hours: 1));
+  }
+
+  _AddAppointmentState._(DateTime start, DateTime end) {
+    _startTime = start;
+    _endTime = end;
+  }
+
+  @override
+  void initState() {
+    _recurFreqStr = _recurFreq[0];
+    _recurInterval = 1;
     _recurByDay['SU'] = false;
     _recurByDay['MO'] = false;
     _recurByDay['TU'] = false;
@@ -54,12 +64,14 @@ class _AddAppointmentState extends State<AddAppointment> {
     _eventColors['Purple'] = Colors.purple;
     _currentColorText = 'Blue';
     _currentColorColor = _eventColors[_currentColorText];
+    super.initState();
   }
 
   
   @override
   Widget build(BuildContext context) {
     final Function addAppointment = ModalRoute.of(context).settings.arguments;
+    //initState();
 
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
@@ -69,16 +81,14 @@ class _AddAppointmentState extends State<AddAppointment> {
           child: Icon(CupertinoIcons.left_chevron),
           onTap: () => Navigator.pop(context)
         ),
-        middle: Text('New Event', style: TextStyle(color: Colors.white),),
+        middle: Text('New event', style: TextStyle(color: Colors.white),),
       ),
-      child: GestureDetector(
-        onHorizontalDragEnd: (_) => Navigator.pop(context),
-        child: Scaffold(
-          body: ListView(
-            padding: EdgeInsets.all(15),
-            children: getWidgets(addAppointment),
-          ),
-        )
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: ListView(
+          padding: EdgeInsets.all(15),
+          children: getWidgets(addAppointment),
+        ),
       ),
     );
       
@@ -105,8 +115,8 @@ class _AddAppointmentState extends State<AddAppointment> {
 
   List<Widget> getWidgets(Function addAppointment) {
     List<Widget> allWidgets = <Widget>[];
-    allWidgets.add(buildInputTile(subjectController, 'Event name', CupertinoIcons.pen));
-    allWidgets.add(buildInputTile(locationController, 'Event location', CupertinoIcons.location_solid));
+    allWidgets.add(buildInputText(subjectController, 'Event name', CupertinoIcons.pen));
+    allWidgets.add(buildInputText(locationController, 'Event location', CupertinoIcons.location_solid));
     if (subjectController.text != '') {
       _canSubmit = true;
     }
@@ -138,21 +148,22 @@ class _AddAppointmentState extends State<AddAppointment> {
   }
 
   
-  // Widget to build the subject
-  ListTile buildInputTile(controller, hint, icon) {
+  // Widget to build text fields
+  ListTile buildInputText(controller, hint, icon) {
     return ListTile(
-      title: TextField(
-      controller: controller,
-      keyboardType: TextInputType.text,
-      onChanged: (String value) => setState(() {
-        if (value == '') {
-          _canSubmit = false;
-        }
-      }),
-      decoration: InputDecoration(
-        icon: Icon(icon),
-        hintText: hint
-      ),
+      title: TextFormField(
+        textCapitalization: TextCapitalization.sentences,
+        controller: controller,
+        keyboardType: TextInputType.text,
+        onChanged: (String value) => setState(() {
+          if (value == '') {
+            _canSubmit = false;
+          }
+        }),
+        decoration: InputDecoration(
+          icon: Icon(icon),
+          hintText: hint
+        ),
       )
     );
   }
@@ -171,7 +182,7 @@ class _AddAppointmentState extends State<AddAppointment> {
       }
     );
   }
-  Container buildDatePicker(DateTime initTime) {
+  Widget buildDatePicker(DateTime initTime) {
     return Container(
       height: 300,
       color: Colors.white,
@@ -333,7 +344,7 @@ class _AddAppointmentState extends State<AddAppointment> {
       submitFunc = () => createRecurAndSubmit(addAppointment);
     }
     return CupertinoButton.filled(
-      child: Text('Add'),
+      child: Text('Save'),
       disabledColor: Colors.grey,
       onPressed: submitFunc
     );

@@ -9,7 +9,7 @@ class Router {
     return <String, WidgetBuilder> {
         CalendarEventView.routeName: (BuildContext context) => CalendarEventView(),
         AddAppointment.routeName: (BuildContext context) => AddAppointment(),
-        AddSemster.routeName: (BuildContext context) => AddSemster(),
+        AddSemester.routeName: (BuildContext context) => AddSemester(),
     };
   }
 }
