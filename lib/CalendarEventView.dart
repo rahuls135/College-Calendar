@@ -208,7 +208,7 @@ class _CalendarEventViewState extends State<CalendarEventView> {
         showAgenda: true,
       ),
       scheduleViewSettings: ScheduleViewSettings(
-          hideEmptyScheduleWeek: true,
+          hideEmptyScheduleWeek: false,
           appointmentItemHeight: 45,
           monthHeaderSettings: MonthHeaderSettings(
             backgroundColor: Colors.blueAccent,
@@ -247,8 +247,8 @@ class _CalendarEventViewState extends State<CalendarEventView> {
         alignment: Alignment.topLeft,
         padding: EdgeInsets.all(20),
         color: Colors.white,
-        width: 375,
-        height: 600,
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height * 4/5,
         child: Scaffold(
           backgroundColor: Colors.white,
           body: ListView(children: <Widget>[

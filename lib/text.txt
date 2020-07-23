@@ -1,0 +1,15 @@
+
+semesters: {
+    semester: {
+        name: "Fall 2020", 
+        startDate: "05303",
+        endDate: "0904,
+        classes: {
+            class: {
+                name: "name",
+            }
+        }
+    },
+}
+
+

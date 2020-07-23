@@ -56,12 +56,13 @@ class _AddAppointmentState extends State<AddAppointment> {
     _recurByDay['TH'] = false;
     _recurByDay['FR'] = false;
     _recurByDay['SA'] = false;
-    _eventColors['Blue'] = Colors.blue;
     _eventColors['Red'] = Colors.red;
-    _eventColors['Pink'] = Colors.pink[200];
-    _eventColors['Green'] = Colors.green;
+    _eventColors['Orange'] = Colors.deepOrange;
     _eventColors['Yellow'] = Colors.amber;
-    _eventColors['Purple'] = Colors.purple;
+    _eventColors['Green'] = Colors.green;
+    _eventColors['Blue'] = Colors.blue;
+    _eventColors['Indigo'] = Colors.indigo;
+    _eventColors['Violet'] = Colors.purple;
     _currentColorText = 'Blue';
     _currentColorColor = _eventColors[_currentColorText];
     super.initState();
@@ -179,12 +180,12 @@ class _AddAppointmentState extends State<AddAppointment> {
         showCupertinoModalPopup(
           context: context,
           builder: (context) => buildDatePicker(time));
-      }
+      }  
     );
   }
   Widget buildDatePicker(DateTime initTime) {
     return Container(
-      height: 300,
+      height: 325,
       color: Colors.white,
       child: CupertinoDatePicker(
       initialDateTime: initTime,
